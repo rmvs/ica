@@ -17,22 +17,32 @@ library(e1071)
 library(caret)
 ```
 
-pre process
+initial plots
 
+```{r}
+xyplot(solTrainY ~ solTrainX$MolWeight, type = c("p","g"), ylab = "Solubility", xlab = "Mol Weight")
+xyplot(solTrainY ~ solTrainX$SurfaceArea1, type = c("p","g"), ylab = "Solubility", xlab = "Surface Area 1")
+bwplot(solTrainY ~ ifelse(solTrainX[,50] == 1, "presence", "absent"),ylab = "Solubility")
+```
+
+
+transformar apenas os FP
 
 ```{r}
 notfps = names(solTrainX)[209:228]
 train_X <- solTrainX[,notfps] + 1
-test_X  <-  solTestX[,contVars] + 1
+test_X  <-  solTestX[,notfps] + 1
 ```
 
+pre process
 
 ```{r}
-
 solPP <- preProcess(train_X, method = "BoxCox")
 solTrainTransX <- predict(solPP, train_X)
 solTrainTestX <- predict(solPP, test_X)
 ```
+
+
 
 Junta os preditores e as variáveis transformadas
 
@@ -47,6 +57,12 @@ skewness(solTrainXtrans$MolWeight)
 skewness(solTrainTransX$MolWeight)
 ```
 
+regressão linear
+
+
+```{r}
+
+```
 
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
