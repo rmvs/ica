@@ -106,7 +106,7 @@ use the training transformed predictor to learn either PCR or PLS and test using
 ```{r}
 custom_folds = createFolds(solTrainY, k = 5, returnTrain = TRUE)
 custom_tcl = trainControl(method = "cv", index = custom_folds, number = 5)
-pls_ = train(x = solTrainTransX, y = solTrainY, method = "pls", trControl = custom_tcl, preProcess =  c("BoxCox"), tuneLength = 20)
+pls_ = train(x = solTrainTransX, y = solTrainY, method = "pls", trControl = custom_tcl, preProcess =  c("BoxCox"), tuneLength = 5)
 
 resultPls = predict(pls_,solTestXtrans)
 frame_pls = data.frame(obs = solTestY, pred = resultPls)
