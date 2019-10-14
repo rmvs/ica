@@ -1788,8 +1788,9 @@ library(caret)</code></pre>
 <p>transformar apenas os FP</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubm90ZnBzID0gbmFtZXMoc29sVHJhaW5YKVsyMDk6MjI4XVxudHJhaW5fWCA8LSBzb2xUcmFpblhbLG5vdGZwc10gKyAxXG50ZXN0X1ggIDwtICBzb2xUZXN0WFssbm90ZnBzXSArIDFcbmBgYCJ9 -->
-<pre class="r"><code>notfps = names(solTrainX)[209:228]
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI25vdGZwcyA9IG5hbWVzKHNvbFRyYWluWClbMjA5OjIyOF1cbm5vdGZwcyA9IG5hbWVzKHNvbFRyYWluWClbIWdyZXBsKFwiRlBcIiwgbmFtZXMoc29sVHJhaW5YKSldXG50cmFpbl9YIDwtIHNvbFRyYWluWFssbm90ZnBzXSArIDFcbnRlc3RfWCAgPC0gIHNvbFRlc3RYWyxub3RmcHNdICsgMVxuYGBgIn0= -->
+<pre class="r"><code>#notfps = names(solTrainX)[209:228]
+notfps = names(solTrainX)[!grepl(&quot;FP&quot;, names(solTrainX))]
 train_X &lt;- solTrainX[,notfps] + 1
 test_X  &lt;-  solTestX[,notfps] + 1</code></pre>
 <!-- rnb-source-end -->
@@ -1798,34 +1799,97 @@ test_X  &lt;-  solTestX[,notfps] + 1</code></pre>
 <p>pre process</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc29sUFAgPC0gcHJlUHJvY2Vzcyh0cmFpbl9YLCBtZXRob2QgPSBcIkJveENveFwiKVxuc29sVHJhaW5UcmFuc1ggPC0gcHJlZGljdChzb2xQUCwgdHJhaW5fWClcbnNvbFRyYWluVGVzdFggPC0gcHJlZGljdChzb2xQUCwgdGVzdF9YKVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc29sUFAgPC0gcHJlUHJvY2Vzcyh0cmFpbl9YLCBtZXRob2QgPSBcIkJveENveFwiKVxucHJlZFRyYWluWCA8LSBwcmVkaWN0KHNvbFBQLCB0cmFpbl9YKVxucHJlZFRlc3RZIDwtIHByZWRpY3Qoc29sUFAsIHRlc3RfWClcbmBgYCJ9 -->
 <pre class="r"><code>solPP &lt;- preProcess(train_X, method = &quot;BoxCox&quot;)
-solTrainTransX &lt;- predict(solPP, train_X)
-solTrainTestX &lt;- predict(solPP, test_X)</code></pre>
+predTrainX &lt;- predict(solPP, train_X)
+predTestY &lt;- predict(solPP, test_X)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Junta os preditores e as variáveis transformadas</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2tld25lc3MoY2JpbmQoc29sVHJhaW5YWzE6MjA4XSxzb2xUcmFpblRyYW5zWCkkTW9sV2VpZ2h0KVxuXG5gYGAifQ== -->
-<pre class="r"><code>skewness(cbind(solTrainX[1:208],solTrainTransX)$MolWeight)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc29sVHJhaW5UcmFuc1ggPC0gY2JpbmQoc29sVHJhaW5YWyxncmVwKFwiRlBcIiwgbmFtZXMoc29sVHJhaW5YKSldLHNvbFRyYWluVHJhbnNYKVxuc29sVGVzdFRyYW5zWCA8LSBjYmluZChzb2xUZXN0WFssZ3JlcChcIkZQXCIsIG5hbWVzKHNvbFRlc3RYKSldLHNvbFRlc3RUcmFuc1gpXG5cbmBgYCJ9 -->
+<pre class="r"><code>solTrainTransX &lt;- cbind(solTrainX[,grep(&quot;FP&quot;, names(solTrainX))],solTrainTransX)
+solTestTransX &lt;- cbind(solTestX[,grep(&quot;FP&quot;, names(solTestX))],solTestTransX)
 </code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIC0wLjAwMDIxNjIyNTVcbiJ9 -->
-<pre><code>[1] -0.0002162255</code></pre>
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2tld25lc3Moc29sVHJhaW5YdHJhbnMkTnVtQXJvbWF0aWNCb25kcylcbnNrZXduZXNzKHNvbFRyYWluVHJhbnNYJE51bUFyb21hdGljQm9uZHMpXG5gYGAifQ== -->
+<pre class="r"><code>skewness(solTrainXtrans$NumAromaticBonds)
+skewness(solTrainTransX$NumAromaticBonds)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>regressão linear</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5mb2xkcyA9IGNyZWF0ZUZvbGRzKHNvbFRyYWluWSwgayA9IDUsIHJldHVyblRyYWluID0gVFJVRSlcbmN0cmxfZm9sZHMgPSB0cmFpbkNvbnRyb2wobWV0aG9kID0gXCJjdlwiLCBpbmRleCA9IGZvbGRzLCBudW1iZXIgPSA1KVxubG1UcmFpbiA9IHRyYWluKHggPSBzb2xUcmFpblRyYW5zWCx5ID0gc29sVHJhaW5ZLCBtZXRob2QgPSBcImxtXCIsIHRyQ29udHJvbCA9IGN0cmxfZm9sZHMsIHByZVByb2Nlc3MgPSBjKFwiQm94Q294XCIpKVxuXG5sbVRyYWluXG5cbmBgYCJ9 -->
+<pre class="r"><code>
+folds = createFolds(solTrainY, k = 5, returnTrain = TRUE)
+ctrl_folds = trainControl(method = &quot;cv&quot;, index = folds, number = 5)
+lmTrain = train(x = solTrainTransX,y = solTrainY, method = &quot;lm&quot;, trControl = ctrl_folds, preProcess = c(&quot;BoxCox&quot;))
+
+lmTrain
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>aplicando o modelo no test set</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5sbVRlc3QgPSB0cmFpbih4ID0gc29sVGVzdFRyYW5zWCwgeSA9IHNvbFRlc3RZLCBtZXRob2QgPSBcImxtXCIsIHRyQ29udHJvbCA9IGN0cmxfZm9sZHMsIHByZVByb2Nlc3MgPSBjKFwiQm94Q294XCIpKVxuXG5sbVRlc3RcblxuYGBgIn0= -->
+<pre class="r"><code>
+lmTest = train(x = solTestTransX, y = solTestY, method = &quot;lm&quot;, trControl = ctrl_folds, preProcess = c(&quot;BoxCox&quot;))
+
+lmTest
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>unsupervised filtering</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29ycmVsYXRlZDEgPSBmaW5kQ29ycmVsYXRpb24oY29yKHNvbFRyYWluVHJhbnNYKSwgLjkpXG5jb3JyZWxhdGVkMiA9IGZpbmRDb3JyZWxhdGlvbihjb3Ioc29sVGVzdFRyYW5zWCksIC45KVxuZmlsdGVyZWRUcmFpblggPC0gc29sVHJhaW5UcmFuc1hbLC1jb3JyZWxhdGVkMV1cbmZpbHRlcmVkVGVzdFggPC0gc29sVGVzdFRyYW5zWFssLWNvcnJlbGF0ZWQyXVxuXG5sbVRyYWluVHVuZSA8LSB0cmFpbih4ID0gZmlsdGVyZWRUcmFpblgsIHkgPSBzb2xUcmFpblksIG1ldGhvZCA9IFwibG1cIiwgdHJDb250cm9sID0gY3RybF9mb2xkcylcblxubG1UcmFpblR1bmVcbmBgYCJ9 -->
+<pre class="r"><code>correlated1 = findCorrelation(cor(solTrainTransX), .9)
+correlated2 = findCorrelation(cor(solTestTransX), .9)
+filteredTrainX &lt;- solTrainTransX[,-correlated1]
+filteredTestX &lt;- solTestTransX[,-correlated2]
+
+lmTrainTune &lt;- train(x = filteredTrainX, y = solTrainY, method = &quot;lm&quot;, trControl = ctrl_folds)
+
+lmTrainTune</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>define rsquared</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucnNxIDwtIGZ1bmN0aW9uICh4LCB5KSBjb3IoeCwgeSkgXiAyXG5gYGAifQ== -->
+<pre class="r"><code>rsq &lt;- function (x, y) cor(x, y) ^ 2</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucG9zdFJlc2FtcGxlKHNvbFRlc3RZLHByZWRfKVxuXG5gYGAifQ== -->
+<pre class="r"><code>postResample(solTestY,pred_)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiICAgICBSTVNFICBSc3F1YXJlZCAgICAgICBNQUUgXG4wLjc2MDE3OTAgMC44NjY5MDQ5IDAuNTY2MTc2MCBcbiJ9 -->
+<pre><code>     RMSE  Rsquared       MAE 
+0.7601790 0.8669049 0.5661760 </code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2tld25lc3Moc29sVHJhaW5YdHJhbnMkTW9sV2VpZ2h0KVxuc2tld25lc3Moc29sVHJhaW5UcmFuc1gkTW9sV2VpZ2h0KVxuYGBgIn0= -->
-<pre class="r"><code>skewness(solTrainXtrans$MolWeight)
-skewness(solTrainTransX$MolWeight)</code></pre>
-<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>regressão linear</p>
+<p>use the training transformed predictor to learn either PCR or PLS and test using test set</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-chunk-end -->
@@ -1835,7 +1899,7 @@ skewness(solTrainTransX$MolWeight)</code></pre>
 <p>The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike <em>Knit</em>, <em>Preview</em> does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.</p>
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQpUaGlzIGlzIGFuIFtSIE1hcmtkb3duXShodHRwOi8vcm1hcmtkb3duLnJzdHVkaW8uY29tKSBOb3RlYm9vay4gV2hlbiB5b3UgZXhlY3V0ZSBjb2RlIHdpdGhpbiB0aGUgbm90ZWJvb2ssIHRoZSByZXN1bHRzIGFwcGVhciBiZW5lYXRoIHRoZSBjb2RlLiANCg0KVHJ5IGV4ZWN1dGluZyB0aGlzIGNodW5rIGJ5IGNsaWNraW5nIHRoZSAqUnVuKiBidXR0b24gd2l0aGluIHRoZSBjaHVuayBvciBieSBwbGFjaW5nIHlvdXIgY3Vyc29yIGluc2lkZSBpdCBhbmQgcHJlc3NpbmcgKkN0cmwrU2hpZnQrRW50ZXIqLiANCg0KDQoNCmBgYHtyfQ0KbGlicmFyeShBcHBsaWVkUHJlZGljdGl2ZU1vZGVsaW5nKQ0KZGF0YShzb2x1YmlsaXR5KQ0KbGlicmFyeShsYXR0aWNlKQ0KbGlicmFyeShlMTA3MSkNCmxpYnJhcnkoY2FyZXQpDQpgYGANCg0KaW5pdGlhbCBwbG90cw0KDQpgYGB7cn0NCnh5cGxvdChzb2xUcmFpblkgfiBzb2xUcmFpblgkTW9sV2VpZ2h0LCB0eXBlID0gYygicCIsImciKSwgeWxhYiA9ICJTb2x1YmlsaXR5IiwgeGxhYiA9ICJNb2wgV2VpZ2h0IikNCnh5cGxvdChzb2xUcmFpblkgfiBzb2xUcmFpblgkU3VyZmFjZUFyZWExLCB0eXBlID0gYygicCIsImciKSwgeWxhYiA9ICJTb2x1YmlsaXR5IiwgeGxhYiA9ICJTdXJmYWNlIEFyZWEgMSIpDQpid3Bsb3Qoc29sVHJhaW5ZIH4gaWZlbHNlKHNvbFRyYWluWFssNTBdID09IDEsICJwcmVzZW5jZSIsICJhYnNlbnQiKSx5bGFiID0gIlNvbHViaWxpdHkiKQ0KYGBgDQoNCg0KdHJhbnNmb3JtYXIgYXBlbmFzIG9zIEZQDQoNCmBgYHtyfQ0Kbm90ZnBzID0gbmFtZXMoc29sVHJhaW5YKVsyMDk6MjI4XQ0KdHJhaW5fWCA8LSBzb2xUcmFpblhbLG5vdGZwc10gKyAxDQp0ZXN0X1ggIDwtICBzb2xUZXN0WFssbm90ZnBzXSArIDENCmBgYA0KDQpwcmUgcHJvY2Vzcw0KDQpgYGB7cn0NCnNvbFBQIDwtIHByZVByb2Nlc3ModHJhaW5fWCwgbWV0aG9kID0gIkJveENveCIpDQpzb2xUcmFpblRyYW5zWCA8LSBwcmVkaWN0KHNvbFBQLCB0cmFpbl9YKQ0Kc29sVHJhaW5UZXN0WCA8LSBwcmVkaWN0KHNvbFBQLCB0ZXN0X1gpDQpgYGANCg0KDQoNCkp1bnRhIG9zIHByZWRpdG9yZXMgZSBhcyB2YXJpw6F2ZWlzIHRyYW5zZm9ybWFkYXMNCg0KYGBge3J9DQpzb2xUcmFpblRyYW5zWCA8LSBjYmluZChzb2xUcmFpblhbMToyMDhdLHNvbFRyYWluVHJhbnNYKQ0Kc29sVHJhaW5UZXN0WCA8LSBjYmluZChzb2xUZXN0WFsxOjIwOF0sc29sVHJhaW5UZXN0WCkNCmBgYA0KDQoNCmBgYHtyfQ0Kc2tld25lc3Moc29sVHJhaW5YdHJhbnMkTW9sV2VpZ2h0KQ0Kc2tld25lc3Moc29sVHJhaW5UcmFuc1gkTW9sV2VpZ2h0KQ0KYGBgDQoNCnJlZ3Jlc3PDo28gbGluZWFyDQoNCg0KYGBge3J9DQoNCmBgYA0KDQoNCkFkZCBhIG5ldyBjaHVuayBieSBjbGlja2luZyB0aGUgKkluc2VydCBDaHVuayogYnV0dG9uIG9uIHRoZSB0b29sYmFyIG9yIGJ5IHByZXNzaW5nICpDdHJsK0FsdCtJKi4NCg0KV2hlbiB5b3Ugc2F2ZSB0aGUgbm90ZWJvb2ssIGFuIEhUTUwgZmlsZSBjb250YWluaW5nIHRoZSBjb2RlIGFuZCBvdXRwdXQgd2lsbCBiZSBzYXZlZCBhbG9uZ3NpZGUgaXQgKGNsaWNrIHRoZSAqUHJldmlldyogYnV0dG9uIG9yIHByZXNzICpDdHJsK1NoaWZ0K0sqIHRvIHByZXZpZXcgdGhlIEhUTUwgZmlsZSkuDQoNClRoZSBwcmV2aWV3IHNob3dzIHlvdSBhIHJlbmRlcmVkIEhUTUwgY29weSBvZiB0aGUgY29udGVudHMgb2YgdGhlIGVkaXRvci4gQ29uc2VxdWVudGx5LCB1bmxpa2UgKktuaXQqLCAqUHJldmlldyogZG9lcyBub3QgcnVuIGFueSBSIGNvZGUgY2h1bmtzLiBJbnN0ZWFkLCB0aGUgb3V0cHV0IG9mIHRoZSBjaHVuayB3aGVuIGl0IHdhcyBsYXN0IHJ1biBpbiB0aGUgZWRpdG9yIGlzIGRpc3BsYXllZC4NCg==</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQpUaGlzIGlzIGFuIFtSIE1hcmtkb3duXShodHRwOi8vcm1hcmtkb3duLnJzdHVkaW8uY29tKSBOb3RlYm9vay4gV2hlbiB5b3UgZXhlY3V0ZSBjb2RlIHdpdGhpbiB0aGUgbm90ZWJvb2ssIHRoZSByZXN1bHRzIGFwcGVhciBiZW5lYXRoIHRoZSBjb2RlLiANCg0KVHJ5IGV4ZWN1dGluZyB0aGlzIGNodW5rIGJ5IGNsaWNraW5nIHRoZSAqUnVuKiBidXR0b24gd2l0aGluIHRoZSBjaHVuayBvciBieSBwbGFjaW5nIHlvdXIgY3Vyc29yIGluc2lkZSBpdCBhbmQgcHJlc3NpbmcgKkN0cmwrU2hpZnQrRW50ZXIqLiANCg0KDQoNCmBgYHtyfQ0KbGlicmFyeShBcHBsaWVkUHJlZGljdGl2ZU1vZGVsaW5nKQ0KZGF0YShzb2x1YmlsaXR5KQ0KbGlicmFyeShsYXR0aWNlKQ0KbGlicmFyeShlMTA3MSkNCmxpYnJhcnkoY2FyZXQpDQpgYGANCg0KaW5pdGlhbCBwbG90cw0KDQpgYGB7cn0NCnh5cGxvdChzb2xUcmFpblkgfiBzb2xUcmFpblgkTW9sV2VpZ2h0LCB0eXBlID0gYygicCIsImciKSwgeWxhYiA9ICJTb2x1YmlsaXR5IiwgeGxhYiA9ICJNb2wgV2VpZ2h0IikNCnh5cGxvdChzb2xUcmFpblkgfiBzb2xUcmFpblgkU3VyZmFjZUFyZWExLCB0eXBlID0gYygicCIsImciKSwgeWxhYiA9ICJTb2x1YmlsaXR5IiwgeGxhYiA9ICJTdXJmYWNlIEFyZWEgMSIpDQpid3Bsb3Qoc29sVHJhaW5ZIH4gaWZlbHNlKHNvbFRyYWluWFssNTBdID09IDEsICJwcmVzZW5jZSIsICJhYnNlbnQiKSx5bGFiID0gIlNvbHViaWxpdHkiKQ0KYGBgDQoNCg0KdHJhbnNmb3JtYXIgYXBlbmFzIG9zIEZQDQoNCmBgYHtyfQ0KI25vdGZwcyA9IG5hbWVzKHNvbFRyYWluWClbMjA5OjIyOF0NCm5vdGZwcyA9IG5hbWVzKHNvbFRyYWluWClbIWdyZXBsKCJGUCIsIG5hbWVzKHNvbFRyYWluWCkpXQ0KdHJhaW5fWCA8LSBzb2xUcmFpblhbLG5vdGZwc10gKyAxDQp0ZXN0X1ggIDwtICBzb2xUZXN0WFssbm90ZnBzXSArIDENCmBgYA0KDQpwcmUgcHJvY2Vzcw0KDQpgYGB7cn0NCnNvbFBQIDwtIHByZVByb2Nlc3ModHJhaW5fWCwgbWV0aG9kID0gIkJveENveCIpDQpwcmVkVHJhaW5YIDwtIHByZWRpY3Qoc29sUFAsIHRyYWluX1gpDQpwcmVkVGVzdFggPC0gcHJlZGljdChzb2xQUCwgdGVzdF9YKQ0KYGBgDQoNCg0KDQpKdW50YSBvcyBwcmVkaXRvcmVzIGUgYXMgdmFyacOhdmVpcyB0cmFuc2Zvcm1hZGFzDQoNCmBgYHtyfQ0Kc29sVHJhaW5UcmFuc1ggPC0gY2JpbmQoc29sVHJhaW5YWyxncmVwKCJGUCIsIG5hbWVzKHNvbFRyYWluWCkpXSxwcmVkVHJhaW5YKQ0Kc29sVGVzdFRyYW5zWCA8LSBjYmluZChzb2xUZXN0WFssZ3JlcCgiRlAiLCBuYW1lcyhzb2xUZXN0WCkpXSxwcmVkVGVzdFgpDQoNCmBgYA0KDQoNCmBgYHtyfQ0Kc2tld25lc3Moc29sVHJhaW5YdHJhbnMkTnVtQXJvbWF0aWNCb25kcykNCnNrZXduZXNzKHNvbFRyYWluVHJhbnNYJE51bUFyb21hdGljQm9uZHMpDQpgYGANCg0KcmVncmVzc8OjbyBsaW5lYXINCg0KDQpgYGB7cn0NCg0KZm9sZHMgPSBjcmVhdGVGb2xkcyhzb2xUcmFpblksIGsgPSA1LCByZXR1cm5UcmFpbiA9IFRSVUUpDQpjdHJsX2ZvbGRzID0gdHJhaW5Db250cm9sKG1ldGhvZCA9ICJjdiIsIGluZGV4ID0gZm9sZHMsIG51bWJlciA9IDUpDQpsbVRyYWluID0gdHJhaW4oeCA9IHNvbFRyYWluVHJhbnNYLHkgPSBzb2xUcmFpblksIG1ldGhvZCA9ICJsbSIsIHRyQ29udHJvbCA9IGN0cmxfZm9sZHMsIHByZVByb2Nlc3MgPSBjKCJCb3hDb3giKSkNCg0KbG1UcmFpbg0KDQpgYGANCg0KYXBsaWNhbmRvIG8gbW9kZWxvIG5vIHRlc3Qgc2V0DQoNCmBgYHtyfQ0KDQpsbVRlc3QgPSB0cmFpbih4ID0gc29sVGVzdFRyYW5zWCwgeSA9IHNvbFRlc3RZLCBtZXRob2QgPSAibG0iLCB0ckNvbnRyb2wgPSBjdHJsX2ZvbGRzLCBwcmVQcm9jZXNzID0gYygiQm94Q294IikpDQoNCmxtVGVzdA0KDQpgYGANCg0KDQp1bnN1cGVydmlzZWQgZmlsdGVyaW5nDQoNCmBgYHtyfQ0KY29ycmVsYXRlZDEgPSBmaW5kQ29ycmVsYXRpb24oY29yKHNvbFRyYWluVHJhbnNYKSwgLjkpDQpjb3JyZWxhdGVkMiA9IGZpbmRDb3JyZWxhdGlvbihjb3Ioc29sVGVzdFRyYW5zWCksIC45KQ0KZmlsdGVyZWRUcmFpblggPC0gc29sVHJhaW5UcmFuc1hbLC1jb3JyZWxhdGVkMV0NCmZpbHRlcmVkVGVzdFggPC0gc29sVGVzdFRyYW5zWFssLWNvcnJlbGF0ZWQyXQ0KDQpsbVRyYWluVHVuZSA8LSB0cmFpbih4ID0gZmlsdGVyZWRUcmFpblgsIHkgPSBzb2xUcmFpblksIG1ldGhvZCA9ICJsbSIsIHRyQ29udHJvbCA9IGN0cmxfZm9sZHMpDQoNCmxtVHJhaW5UdW5lDQpgYGANCg0KDQpkZWZpbmUgcnNxdWFyZWQNCg0KYGBge3J9DQpyc3EgPC0gZnVuY3Rpb24gKHgsIHkpIGNvcih4LCB5KSBeIDINCmBgYA0KDQoNCg0KYGBge3J9DQpwcmVkXyA9IHByZWRpY3QobG1UcmFpblR1bmUsc29sVGVzdFh0cmFucykNCnBvc3RSZXNhbXBsZShzb2xUZXN0WSxwcmVkXykNCmxtVHJhaW5UdW5lJHJlc2FtcGxlDQpgYGANCg0KDQoNCmBgYHtyfQ0KcmVzdWx0YWRvcyA9IGRhdGEuZnJhbWUoJ09ic2VydmVkJyA9IHNvbFRlc3RZLCAnTW9kZWwnID0gcHJlZF8pDQpyZXN1bHRhZG9zDQpgYGANCg0KDQp1c2UgdGhlIHRyYWluaW5nIHRyYW5zZm9ybWVkIHByZWRpY3RvciB0byBsZWFybiBlaXRoZXIgUENSIG9yIFBMUyBhbmQgdGVzdCB1c2luZyB0ZXN0IHNldA0KDQpgYGB7cn0NCnBsc18gPSB0cmFpbih4ID0gc29sVHJhaW5UcmFuc1gsIHkgPSBzb2xUcmFpblksIG1ldGhvZCA9ICJwbHMiLCB0ckNvbnRyb2wgPSBjdHJsX2ZvbGRzKQ0KYGBgDQoNCg0KDQoNCkFkZCBhIG5ldyBjaHVuayBieSBjbGlja2luZyB0aGUgKkluc2VydCBDaHVuayogYnV0dG9uIG9uIHRoZSB0b29sYmFyIG9yIGJ5IHByZXNzaW5nICpDdHJsK0FsdCtJKi4NCg0KV2hlbiB5b3Ugc2F2ZSB0aGUgbm90ZWJvb2ssIGFuIEhUTUwgZmlsZSBjb250YWluaW5nIHRoZSBjb2RlIGFuZCBvdXRwdXQgd2lsbCBiZSBzYXZlZCBhbG9uZ3NpZGUgaXQgKGNsaWNrIHRoZSAqUHJldmlldyogYnV0dG9uIG9yIHByZXNzICpDdHJsK1NoaWZ0K0sqIHRvIHByZXZpZXcgdGhlIEhUTUwgZmlsZSkuDQoNClRoZSBwcmV2aWV3IHNob3dzIHlvdSBhIHJlbmRlcmVkIEhUTUwgY29weSBvZiB0aGUgY29udGVudHMgb2YgdGhlIGVkaXRvci4gQ29uc2VxdWVudGx5LCB1bmxpa2UgKktuaXQqLCAqUHJldmlldyogZG9lcyBub3QgcnVuIGFueSBSIGNvZGUgY2h1bmtzLiBJbnN0ZWFkLCB0aGUgb3V0cHV0IG9mIHRoZSBjaHVuayB3aGVuIGl0IHdhcyBsYXN0IHJ1biBpbiB0aGUgZWRpdG9yIGlzIGRpc3BsYXllZC4NCg==</div>
 
 
 

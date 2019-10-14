@@ -1,14 +1,3 @@
----
-title: "R Notebook"
-output: html_notebook
----
-
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
-
-
-
 ```{r}
 library(AppliedPredictiveModeling)
 data(solubility)
@@ -29,7 +18,8 @@ bwplot(solTrainY ~ ifelse(solTrainX[,50] == 1, "presence", "absent"),ylab = "Sol
 transformar apenas os FP
 
 ```{r}
-notfps = names(solTrainX)[209:228]
+#notfps = names(solTrainX)[209:228]
+notfps = names(solTrainX)[!grepl("FP", names(solTrainX))]
 train_X <- solTrainX[,notfps] + 1
 test_X  <-  solTestX[,notfps] + 1
 ```
@@ -38,8 +28,8 @@ pre process
 
 ```{r}
 solPP <- preProcess(train_X, method = "BoxCox")
-solTrainTransX <- predict(solPP, train_X)
-solTrainTestX <- predict(solPP, test_X)
+predTrainX <- predict(solPP, train_X)
+predTestX <- predict(solPP, test_X)
 ```
 
 
@@ -47,14 +37,15 @@ solTrainTestX <- predict(solPP, test_X)
 Junta os preditores e as variáveis transformadas
 
 ```{r}
-solTrainTransX <- cbind(solTrainX[1:208],solTrainTransX)
-solTrainTestX <- cbind(solTestX[1:208],solTrainTestX)
+solTrainTransX <- cbind(solTrainX[,grep("FP", names(solTrainX))],predTrainX)
+solTestTransX <- cbind(solTestX[,grep("FP", names(solTestX))],predTestX)
+
 ```
 
 
 ```{r}
-skewness(solTrainXtrans$MolWeight)
-skewness(solTrainTransX$MolWeight)
+skewness(solTrainXtrans$NumAromaticBonds)
+skewness(solTrainTransX$NumAromaticBonds)
 ```
 
 regressão linear
@@ -62,7 +53,76 @@ regressão linear
 
 ```{r}
 
+folds = createFolds(solTrainY, k = 5, returnTrain = TRUE)
+ctrl_folds = trainControl(method = "cv", index = folds, number = 5)
+lmTrain = train(x = solTrainTransX,y = solTrainY, method = "lm", trControl = ctrl_folds, preProcess = c("BoxCox"))
+
+lmTrain
+
 ```
+
+
+
+model tuning
+
+```{r}
+correlated1 = findCorrelation(cor(solTrainTransX), .9)
+correlated2 = findCorrelation(cor(solTestTransX), .9)
+filteredTrainX <- solTrainTransX[,-correlated1]
+filteredTestX <- solTestTransX[,-correlated2]
+
+lmTrainTune <- train(x = filteredTrainX, y = solTrainY, method = "lm", trControl = ctrl_folds)
+
+lmTrainTune
+```
+
+
+define rsquared
+
+```{r}
+rsq <- function (x, y) cor(x, y) ^ 2
+```
+
+
+
+```{r}
+pred_ = predict(lmTrainTune,solTestXtrans)
+head(pred_)
+postResample(solTestY,pred_)
+RMSE(solTestY,pred_)
+lmTrainTune$resample
+```
+
+
+
+```{r}
+resultados = data.frame(obs = solTestY, pred = pred_)
+defaultSummary(resultados)
+```
+
+
+use the training transformed predictor to learn either PCR or PLS and test using test set
+
+```{r}
+custom_folds = createFolds(solTrainY, k = 5, returnTrain = TRUE)
+custom_tcl = trainControl(method = "cv", index = custom_folds, number = 5)
+pls_ = train(x = solTrainTransX, y = solTrainY, method = "pls", trControl = custom_tcl, preProcess =  c("BoxCox"), tuneLength = 20)
+
+resultPls = predict(pls_,solTestXtrans)
+frame_pls = data.frame(obs = solTestY, pred = resultPls)
+defaultSummary(frame_pls)
+
+#RMSE(solTestY,plsPred)
+#postResample(solTrainXtrans,plsResults)
+
+
+```
+
+```{r}
+
+
+```
+
 
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
