@@ -5,6 +5,7 @@ library(lattice)
 library(e1071)
 library(caret)
 library(corrplot)
+library(ggbiplot)
 ```
 
 Matrix mean, deviation and skewness
@@ -83,6 +84,15 @@ corrplot(correlation_matrix, type = "upper", order = "hclust",
          tl.col = "black", tl.srt = 45)
 ```
 
+PCA Analises
+
+```{r}
+Glasspca = prcomp(solTestTransX[, 209:228])
+summary(Glasspca)
+ggbiplot(Glasspca)
+ggbiplot(Glasspca, ellipse = TRUE)
+```
+
 
 regressão linear
 
@@ -133,6 +143,19 @@ lmTrainTune$resample
 ```{r}
 resultados = data.frame(obs = solTestY, pred = pred_)
 defaultSummary(resultados)
+```
+
+Penalized Models
+
+```{r}
+ridgeGrid <- data.frame (.lambda = seq(0, .1, length = 15))
+set.seed(100)
+ridgeRegFit <- train(solTrainXtrans,solTrainY,
+method = "ridge",
+tuneGrid = ridgeGrid,
+trControl = ctrl,
+preProc = c("center", "scale"))
+ridgeRegFit
 ```
 
 
