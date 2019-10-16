@@ -245,8 +245,7 @@ correlated1 = findCorrelation(cor(solTrainTransX), .9)
 #correlated2 = findCorrelation(cor(solTestTransX), .9)
 filteredTrainX <- solTrainTransX[,-correlated1]
 #filteredTestX <- solTestTransX[,-correlated2]
-corrplot::corrplot(cor(filteredTrainX[,209:228]),order = "hclust", 
-                   tl.cex = .8)
+
 q <- solTrainTransX[,209:228][,-findCorrelation(cor(solTrainTransX[,209:228]), .9)]
 corrplot::corrplot(cor(q))
 
