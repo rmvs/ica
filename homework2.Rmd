@@ -7,12 +7,38 @@ library(caret)
 library(corrplot)
 ```
 
+Matrix mean, deviation and skewness
+Generating a table with mean, deviation and skewness
+Creating the matrix with 228 rows and 3 colums
+
+```{r}
+A = matrix(nrow=228, ncol=3)
+
+mean_sd_skewness <- function(data) {
+  
+  dimnames(A) = list(
+    colnames(data),
+    c("mean", "deviaton", "skewness")
+  )
+  
+  ncoluns = dim(data)[2]
+  for(i in 1:ncoluns) {
+    A[i, 1] = mean(data[,i])
+    A[i, 2] = sd(data[,i])
+    A[i, 3] = skewness(data[,i])
+  }
+  print(A)
+}
+
+```
+
+
 initial plots
 
 ```{r}
 xyplot(solTrainY ~ solTrainX$MolWeight, type = c("p","g"), ylab = "Solubility", xlab = "Mol Weight")
 xyplot(solTrainY ~ solTrainX$SurfaceArea1, type = c("p","g"), ylab = "Solubility", xlab = "Surface Area 1")
-bwplot(solTrainY ~ ifelse(solTrainX[,50] == 1, "presence", "absent"),ylab = "Solubility")
+bwplot(solTrainY ~ ifelse(solTrainX[,50] == 1, "presence", "absent"), ylab = "Solubility")
 ```
 
 
@@ -29,7 +55,7 @@ test_X  <- solTestX[,209:228] + 1
 pre process
 
 ```{r}
-solPP <- preProcess(train_X, method = "BoxCox")
+solPP <- preProcess(train_X, method = c("BoxCox", "center", "scale"))
 predTrainX <- predict(solPP, train_X)
 predTestX <- predict(solPP, test_X)
 ```
@@ -45,12 +71,24 @@ solTestTransX <- cbind(solTestX[,grep("FP", names(solTestX))],predTestX)
 
 
 ```{r}
+
 skewness(solTrainXtrans$MolWeight)
 skewness(solTrainTransX$MolWeight)
+
+#mean_sd_skewness(solTrainXtrans)
+mean_sd_skewness(solTrainTransX)
 ```
 
-regressão linear
+Correlation Matrix
 
+```{r}
+correlation_matrix = cor(solTrainTransX[, 209:228])
+corrplot(correlation_matrix, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45)
+```
+
+
+regressão linear
 
 ```{r}
 
@@ -130,12 +168,6 @@ defaultSummary(frame_pls)
 
 ```
 
-
-
-
-```{r}
-
-```
 
 
 
