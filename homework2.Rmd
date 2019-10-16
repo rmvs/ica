@@ -5,7 +5,135 @@ library(lattice)
 library(e1071)
 library(caret)
 library(corrplot)
+library(ggbiplot)
 ```
+Ploting Some Histograms of note binary data
+
+```{r}
+colors = colors()
+
+hist(solTrainX$MolWeight, 
+     main="MolWeight",
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumAtoms, 
+     main="NumAtoms",
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumNonHAtoms, 
+     main="NumNonHAtoms", 
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumBonds, 
+     main="NumBonds",
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumNonHBonds, 
+     main="NumNonHBonds",
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumMultBonds, 
+     main="NumMultBonds",
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumRotBonds, 
+     main="NumRotBonds",
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumDblBonds, 
+     main="NumDblBonds",
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumAromaticBonds, 
+     main="NumAromaticBonds",
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumHydrogen, 
+     main="NumHydrogen",
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumCarbon, 
+     main="NumCarbon",
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumNitrogen, 
+     main="NumNitrogen", 
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumOxygen, 
+     main="NumOxygen", 
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumSulfer, 
+     main="NumSulfer",
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumChlorine, 
+     main="NumChlorine", 
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumHalogen, 
+     main="NumHalogen", 
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$NumRings, 
+     main="NumRings", 
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$HydrophilicFactor, 
+     main="HydrophilicFactor",
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$SurfaceArea1, 
+     main="SurfaceArea1", 
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+
+hist(solTrainX$SurfaceArea2, 
+     main="SurfaceArea2", 
+     border="blue", 
+     col=sample(colors, 1),
+     las=1)
+```
+
+
 
 Matrix mean, deviation and skewness
 Generating a table with mean, deviation and skewness
@@ -87,6 +215,14 @@ corrplot(correlation_matrix, type = "upper", order = "hclust",
          tl.col = "black", tl.srt = 45)
 ```
 
+PCA Analises
+
+```{r}
+Glasspca = prcomp(solTestTransX[, 209:228])
+summary(Glasspca)
+ggbiplot(Glasspca, ellipse = TRUE)
+```
+
 
 regressão linear
 
@@ -109,8 +245,7 @@ correlated1 = findCorrelation(cor(solTrainTransX), .9)
 #correlated2 = findCorrelation(cor(solTestTransX), .9)
 filteredTrainX <- solTrainTransX[,-correlated1]
 #filteredTestX <- solTestTransX[,-correlated2]
-corrplot::corrplot(cor(filteredTrainX[,209:228]),order = "hclust", 
-                   tl.cex = .8)
+
 q <- solTrainTransX[,209:228][,-findCorrelation(cor(solTrainTransX[,209:228]), .9)]
 corrplot::corrplot(cor(q))
 
@@ -147,6 +282,40 @@ fits <- fitted(lmTrain)
 plot(fits,residuals)
 
 ```
+
+Penalized Models
+
+```{r}
+indx <- createFolds(solTrainY, returnTrain = TRUE)
+ctrl <- trainControl(method = "cv", number = 10)
+ridgeGrid <- data.frame (.lambda = seq(0, .1, length = 15))
+set.seed(100)
+ridgeRegFit <- train(solTrainXtrans,solTrainY,
+method = "ridge",
+tuneGrid = ridgeGrid,
+trControl = ctrl,
+preProc = c("center", "scale"))
+ridgeRegFit
+```
+
+
+```{r}
+print(update(plot(ridgeRegFit), xlab = "Penalty"))
+```
+
+```{r}
+enetGrid <- expand.grid(lambda = c(0, 0.01, .1),
+fraction = seq(.05, 1, length = 20))
+set.seed(100)
+enetTune <- train(x = solTrainXtrans, y = solTrainY,
+method = "enet",
+tuneGrid = enetGrid,
+trControl = ctrl,
+preProc = c("center", "scale"))
+enetTune
+plot(enetTune)
+```
+
 
 
 use the training transformed predictor to learn either PCR or PLS and test using test set
