@@ -4,6 +4,7 @@ data(solubility)
 library(lattice)
 library(e1071)
 library(caret)
+library(corrplot)
 ```
 
 initial plots
@@ -18,10 +19,11 @@ bwplot(solTrainY ~ ifelse(solTrainX[,50] == 1, "presence", "absent"),ylab = "Sol
 transformar apenas os FP
 
 ```{r}
-#notfps = names(solTrainX)[209:228]
-notfps = names(solTrainX)[!grepl("FP", names(solTrainX))]
-train_X <- solTrainX[,notfps] + 1
-test_X  <-  solTestX[,notfps] + 1
+#notfps = names(solTrainX)[!grepl("FP", names(solTrainX))]
+train_X <- solTrainX[,209:228] + 1
+test_X  <- solTestX[,209:228] + 1
+
+
 ```
 
 pre process
@@ -31,7 +33,6 @@ solPP <- preProcess(train_X, method = "BoxCox")
 predTrainX <- predict(solPP, train_X)
 predTestX <- predict(solPP, test_X)
 ```
-
 
 
 Junta os preditores e as variáveis transformadas
@@ -44,8 +45,8 @@ solTestTransX <- cbind(solTestX[,grep("FP", names(solTestX))],predTestX)
 
 
 ```{r}
-skewness(solTrainXtrans$NumAromaticBonds)
-skewness(solTrainTransX$NumAromaticBonds)
+skewness(solTrainXtrans$MolWeight)
+skewness(solTrainTransX$MolWeight)
 ```
 
 regressão linear
@@ -67,9 +68,13 @@ model tuning
 
 ```{r}
 correlated1 = findCorrelation(cor(solTrainTransX), .9)
-correlated2 = findCorrelation(cor(solTestTransX), .9)
+#correlated2 = findCorrelation(cor(solTestTransX), .9)
 filteredTrainX <- solTrainTransX[,-correlated1]
-filteredTestX <- solTestTransX[,-correlated2]
+#filteredTestX <- solTestTransX[,-correlated2]
+corrplot::corrplot(cor(filteredTrainX[,209:228]),order = "hclust", 
+                   tl.cex = .8)
+q <- solTrainTransX[,209:228][,-findCorrelation(cor(solTrainTransX[,209:228]), .9)]
+corrplot::corrplot(cor(q))
 
 lmTrainTune <- train(x = filteredTrainX, y = solTrainY, method = "lm", trControl = ctrl_folds)
 
@@ -98,15 +103,22 @@ lmTrainTune$resample
 ```{r}
 resultados = data.frame(obs = solTestY, pred = pred_)
 defaultSummary(resultados)
+plot(solTestY ~ .,resultados)
+residuals <- resid(lmTrain)
+fits <- fitted(lmTrain)
+plot(fits,residuals)
+
 ```
 
 
 use the training transformed predictor to learn either PCR or PLS and test using test set
 
 ```{r}
-custom_folds = createFolds(solTrainY, k = 5, returnTrain = TRUE)
-custom_tcl = trainControl(method = "cv", index = custom_folds, number = 5)
+custom_folds = createFolds(solTrainY, k = 10, returnTrain = TRUE)
+custom_tcl = trainControl(method = "cv", index = custom_folds, number = 10)
 pls_ = train(x = solTrainTransX, y = solTrainY, method = "pls", trControl = custom_tcl, preProcess =  c("BoxCox"), tuneLength = 5)
+
+pls_
 
 resultPls = predict(pls_,solTestXtrans)
 frame_pls = data.frame(obs = solTestY, pred = resultPls)
@@ -118,8 +130,10 @@ defaultSummary(frame_pls)
 
 ```
 
-```{r}
 
+
+
+```{r}
 
 ```
 
